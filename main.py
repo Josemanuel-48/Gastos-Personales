@@ -1,81 +1,79 @@
-# importamos modulo.
+# importamos modulo
 import sqlite3
-# conectamos con la base de datos.
-conn = sqlite3.connect("Agenda.db")
+# conectamos con la base.
+conn = sqlite3.connect("Gastos_Personales.db")
 # cursor encargado de ejecutar consultas SQL.
 cursor = conn.cursor()
-# se crea la tabla.
+# se crea la tabla, sino existe la crea.
 cursor.execute("""
-    CREATE TABLE IF NOT EXISTS contactos(
-        id INTEGER PRIMARY KEY  AUTOINCREMENT,
-        nombre TEXT NOT NULL,
-        telefono  TEXT NOT NULL,
-        email TEXT NOT NULL,
-        ciudad TEXT NOT NULL,
-        puesto TEXT NOT NULL           
+        CREATE TABLE IF NOT EXISTS Gastos_Personales(
+            id INTEGER PRIMARY KEY AUTOINCREMENT, 
+            fecha TEXT NOT NULL, 
+            sitio TEXT NOT NULL,  
+            categoria TEXT NOT NULL,
+            cantidad REAL  
     )
 """)
-# se crea funcion para añadir un contacto.
-def añadir_contacto():
-    nombre = input("Escribe el nombre: ")
-    telefono = (input("Escribe el numero: "))
-    email = input("Escribe el emael: ")
-    ciudad = input("Escribe la ciudad: ")
-    puesto = input("Escribe el puesto que realiza: ")
-    print("Contacto creado!!!!")
+    
+def datos():
+    fecha = (input("Fecha: "))
+    sitio = input("lugar de gasto: ")
+    categoria = input("Escribe la categoria: ")
+    cantidad = float(input("Cuánto ha costado (€): "))
+    print("Gasto Añadido!!!")
     cursor.execute(
-        "INSERT INTO contactos(nombre, telefono, email, ciudad, puesto) VALUES(?, ?, ?, ?, ?)", (nombre, telefono, email, ciudad, puesto)
-)
+        "INSERT INTO Gastos_Personales(fecha, sitio, categoria, cantidad) VALUES(?, ?, ?, ?)", (fecha, sitio, categoria, cantidad)
+    )
     conn.commit()
 
-def ver_contactos():
-    cursor.execute( "SELECT * FROM contactos")
+def ver_gastos():
+    cursor.execute("SELECT * FROM Gastos_Personales")
     resultado = cursor.fetchall()
-    for i in resultado:
+    for r in resultado:
+        print(r)
+
+def categoria_gasto():
+    cursor.execute("SELECT categoria, SUM(cantidad) FROM Gastos_Personales GROUP BY categoria")
+    total = cursor.fetchall()
+    for i in total:
         print(i)
 
-def buscar_contacto():
-    usuario = input("¿Que contacto quieres buscar?: ")
-    cursor.execute("SELECT * FROM contactos WHERE nombre=?", (usuario,))
-    buscar = cursor.fetchall()
-    for x in buscar:
+def ver_total():
+    cursor.execute("SELECT SUM(cantidad) FROM Gastos_Personales")
+    total = cursor.fetchall()
+    for x in total:
         print(x)
 
-def actualizar_contacto():
-    id_contacto = input("¿Que contacto quieres actualizar?: ")
-    nuevo_nombre = input("Nuevo nombre: ")
-    cursor.execute("UPDATE contactos SET nombre=? WHERE id=?", (nuevo_nombre, id_contacto))
+def borrar_gasto():
+    usuario = input("Que id quiere borrar: ")
+    cursor.execute("DELETE FROM Gastos_Personales WHERE id=?", (usuario,))
     conn.commit()
-
-def borrar_contacto():
-    borr = input("Escriba el --id-- correspondiente para borrar el contacto: ")
-    cursor.execute("DELETE FROM contactos WHERE id=?", (borr, ))
-    print("Contacto borrado!!!!")
-    conn.commit()
+    print("Registro Eliminado!!!!")
 
 def menu():
     while True:
-        print("============================================")
-        print("------AGENDA DE CONTACTOS PERSONAL---------")
-        print("============================================")
-        print("1. Añadir Contacto")
-        print("2. Ver Contactos")
-        print("3. Buscar Contacto")
-        print("4. Actualizar Contacto")
-        print("5. Borrar Contacto")
+        print("==========================")
+        print("---GASTOS PERSONALES---")
+        print("==========================")
+        print("1. Añadir gasto")
+        print("2. Ver todos los gastos")
+        print("3. Ver por categoría")
+        print("4. Ver total")
+        print("5. Borrar gasto")
         print("6. Salir")
-        opcion = int(input("Eliga una opcion para empezar!!!!!"))
+        opcion = int(input("Escoge una opcion: "))
         if opcion == 1:
-            añadir_contacto()
+            datos()
         elif opcion == 2:
-            ver_contactos()
+            ver_gastos()
         elif opcion == 3:
-            buscar_contacto()
+            categoria_gasto()
         elif opcion == 4:
-            actualizar_contacto()
+            ver_total()
         elif opcion == 5:
-            borrar_contacto()
+            borrar_gasto()
         else:
             break
+
 menu()
 conn.close()
